@@ -1,16 +1,15 @@
-const { LocalModel } = require('../shared/local.model')
+const { PostgresqlModel } = require('../shared/models/postgresql.model')
 
-class BeerModel extends LocalModel {
+class BeerModel extends PostgresqlModel {
   constructor () {
-    super('beer')
+    super('beer', 'postgresql')
   }
 
-  async drink (id) {
-    return `Gulp Gulp ${this.store[id].name}`
+  async drink (id, context) {
+    return `Gulp Gulp ${this.get(id, context)}`
   }
 }
 
 module.exports = {
-  BeerModel,
-  beerModel: new BeerModel()
+  BeerModel
 }

@@ -1,0 +1,24 @@
+version: '3'
+
+services:
+  redis:
+    container_name: redis
+    image: redis:latest
+    ports: 
+      - 6379:6379
+
+  postgres:
+    container_name: postgres
+    image: postgres:latest
+    environment:
+      - POSTGRES_USER=graphql_example
+      - POSTGRES_PASSWORD=password
+    volumes:
+      - ./persistent/postgres:/var/lib/postgresql/data
+    ports: 
+      - 5432:5432
+    healthcheck:
+      test: pg_isready -h localhost -p 5432 -q -U analytics
+      interval: 3s
+      timeout: 5s
+      retries: 5

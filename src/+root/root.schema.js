@@ -4,12 +4,17 @@ const { version } = require('../../package.json')
 
 const typeDefs = gql`
   type Query {
-    health: JSON
     version: String
   }
 
   type Mutation {
     noop(bool: Boolean): Boolean
+  }
+
+  type Resource {
+    id: ID
+    createdAt: String
+    updatedAt: String
   }
 
   scalar JSON
@@ -22,9 +27,6 @@ const typeDefs = gql`
 
 const resolvers = {
   Query: {
-    health: () => ({
-      app: true
-    }),
     version: () => version
   },
   Mutation: {

@@ -1,32 +1,39 @@
-const { ApolloServer } = require('apollo-server')
+const config = require('config')
+const { ApolloServer } = require('apollo-server-express')
+const { mergeSchemas, schemaMutator } = require('./shared/graphql-tools')
+const errorService = require('./shared/error.service')
+const authenticationService = require('./shared/authentication.service')
 
-const schemas = [
-  './shared/resource.schema',
-
-  './+root/root.schema',
-  './+beer/beer.schema',
-  './+brewery/brewery.schema'
-]
+const CONFIG = config.get('apollo')
 
 const directives = [
-  './shared/extends.directive'
+  require('./shared/directives/extends.directive')
 ]
 
-const graphqlServer = new ApolloServer({
-  typeDefs: [...schemas, ...directives].map((path) => require(path).typeDefs),
-  resolvers: schemas.map((path) => require(path).resolvers),
-  schemaDirectives: directives.reduce((acc, path) => {
-    acc = {
-      ...acc,
-      ...require(path).schemaDirectives
-    }
-    return acc
-  }, {}),
-  context: ({req, res}) => ({
-    req,
-    res
-  }),
-  tracing: true
+const schemas = [
+  require('./+root/root.schema'),
+  require('./+beer/beer.schema')
+]
+
+const { typeDefs, resolvers, schemaDirectives, dataSources } = mergeSchemas(schemas, directives)
+
+const server = new ApolloServer({
+  typeDefs,
+  resolvers,
+  schemaDirectives,
+  dataSources,
+  context: (context) => context,
+  tracing: CONFIG.tracing,
+  engine: CONFIG.engine,
+  cors: CONFIG.cors,
+  formatError: errorService.graphqlErrorHandler
 })
 
-module.exports = { graphqlServer }
+schemaMutator(server.schema, [
+  errorService.fieldMutator,
+  authenticationService.fieldMutator
+])
+
+module.exports = {
+  server
+}

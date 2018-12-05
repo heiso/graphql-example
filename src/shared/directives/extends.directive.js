@@ -1,8 +1,12 @@
 const { gql, SchemaDirectiveVisitor } = require('apollo-server')
 
+const typeDefs = gql`
+  directive @extends(type: String!) on OBJECT
+`
+
 class ExtendsDirective extends SchemaDirectiveVisitor {
   visitObject (type) {
-    const {type: parentType} = this.args
+    const { type: parentType } = this.args
     if (!this.schema.getType(parentType)) {
       throw new Error(`${this.visitedType} is trying to extends an undefined type named "${parentType}"`)
     }
@@ -15,15 +19,9 @@ class ExtendsDirective extends SchemaDirectiveVisitor {
   }
 }
 
-const typeDefs = gql`
-  directive @extends(type: String!) on OBJECT
-`
-
-const schemaDirectives = {
-  extends: ExtendsDirective
-}
-
 module.exports = {
   typeDefs,
-  schemaDirectives
+  schemaDirectives: {
+    extends: ExtendsDirective
+  }
 }
